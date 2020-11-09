@@ -27,10 +27,16 @@ fi
 }
 
 if [[ ${@:1} == "" ]]
-then echo "usage: ${0##*/} [-s 'status'] || (files to add) [-m "'"'"commit message"'"'"] [-p 'push']"; exit
+then echo "usage: ${0##*/} [-s] [-rm] || (files to add) [-m "'"'"message"'"'"] [-p]"; 
+echo "\t\t-s\tGit status"
+echo "\t\t-rm\tGit rm. Ignores errors"
+echo "\t\t-m\tCommit with a message"
+echo "\t\t-p\tGit push"
+exit
 fi
 gitcheck;
 mess="no";
+remove="false"
 
 for arg in "$@"
 do
@@ -38,6 +44,10 @@ do
 	then git commit -m "$arg"; mess="no"; continue
 	elif [[ $arg == "-m" ]]
 	then mess="yes"; continue
+	elif [[ $arg == "-rm" ]]
+	then remove="true"; continue
+	elif [[ $remove == "true" && ( -f $arg || -d $arg )]]
+	then rm $arg; git rm $arg 2> /dev/null; continue
 	elif [[ -f $arg ]]
 	then git add $arg; continue
 	elif [[ -d $arg ]]
