@@ -6,7 +6,7 @@
 #    By: phakakos <phakakos@student.hive.fi>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/11/12 18:10:52 by phakakos          #+#    #+#              #
-#    Updated: 2020/11/09 14:04:55 by phakakos         ###   ########.fr        #
+#    Updated: 2020/11/09 14:53:12 by phakakos         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@
 PWD=$(pwd)
 # change to your own libft folder 
 LIBFT=~/libft
+LIB_FOLDER=$(echo "${LIBFT##*/}")
 # By default $USER is used for the author file
 # Change this if your user does not match your intra login
 MY_USER=""
@@ -29,6 +30,15 @@ write_author()
 	fi
 	echo "$MY_USER" > author; echo ">Created author file"; echo '';
 }
+
+# Copying function
+# Change to fit your needs
+copy(){
+	cp -r $LIBFT .
+	rm -rf $LIB_FOLDER/.git
+	rm -rf $LIB_FOLDER/README.md
+}
+
 
 copy_lib(){
 # Test the libft folder setup is done properly
@@ -51,7 +61,7 @@ then
 		while true
 		do
 			if [[ $lib == "y" ]]
-			then make -C $LIBFT fclean; rm -r libft; cp -r $LIBFT .; echo ">Copied to current folder"; break
+			then make -C $LIBFT fclean; rm -r $LIB_FOLDER; copy ; echo ">Copied to current folder"; break
 			elif [[ $lib == "n" ]]
 			then echo "No re-copy"; break
 			else read -p "(y/n) " lib
@@ -59,7 +69,7 @@ then
 		done
 	fi
 else
-	make -C $LIBFT fclean; cp -r $LIBFT .; echo ">Copied library to current folder"
+	make -C $LIBFT fclean; copy ; echo ">Copied library to current folder"
 fi
 }
 
