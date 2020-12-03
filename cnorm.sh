@@ -16,6 +16,12 @@
 # Tested to work on zsh 5.3, bash 3.2.57 on iMac 10.14.6
 # Made by phakakos, Hive Helsinki 2020
 
+
+# expanded aliases to support norminette aliases
+# ADD YOUR ALIAS FILE IF NEEDED
+shopt -s expand_aliases
+source ~/.zshrc
+
 BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
