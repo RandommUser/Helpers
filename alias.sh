@@ -1,5 +1,5 @@
 
-#TEST=$(cat ~/.zshrc | grep -i '^alias')
+# Change this to your alias file
 ALIAS_FILE=(~/.zshrc)
 usage(){
 	printf "%s\n" "usage: $0 -l | -rm -mv -add 'name' 'command'"
@@ -17,7 +17,6 @@ then cat $ALIAS_FILE | grep '^alias'
 elif [[ $1 == "-rm" && $2 != "" ]]
 then
 FIND=$(cat $ALIAS_FILE | grep "^alias $2=")
-#printf "%s\n" "$FIND"
 	if [[ $FIND == "" ]]
 	then echo "No alias $2 found"; exit
 	fi
@@ -40,8 +39,8 @@ read -p "What do you want to rename it to? (empty to cancel) " aname
 	then echo "Cancelled, exiting..."; exit
 	else
 	NEWLINE=$(echo "$FIND" | sed -e "s/^alias $2\(=\".*\"\)$/alias $aname\1/")
-	echo $NEWLINE
 	sed -i '' "s/$FIND/$NEWLINE/" $ALIAS_FILE
+	echo "Alias renamed to $2"
 	fi
 elif [[ $1 == "-add" && $2 != "" && $3 != "" ]]
 then
