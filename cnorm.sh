@@ -56,6 +56,7 @@ NORME="Norme: "
 COMP_MSG="may not compile"
 INVA_MSG="Not a valid file"
 ERR_MSG="Error ("
+ERR_MISC="Error"
 
 # in case of "file may not compile" the norminette will not print out norm errors.
 WARN_MESSAGE="THIS MAY RESULT IN NORM-ERRORS BEING IGNORED, CHECK MANUALLY"
@@ -65,6 +66,7 @@ NEWFILE="NEWFILE"
 WARNING="WARNING"
 ERROR="ERROR"
 INVALID="INVALID"
+ERROR_MISC="ERROR-MISC"
 
 main(){
 STATE=""
@@ -80,6 +82,7 @@ do
 	NORM_FILE=$(echo "$line" | grep "$NORME" | sed "s/$NORME//" | sed 's/.\/ //');
 	WARNING=$(echo "$line"  | grep "$COMP_MSG");
 	ERROR=$(echo "$line" | grep "$ERR_MSG");
+	ERROR_MISC=$(echo "$line" | grep "$ERR_MISC");
 	INVA=$(echo "$line" | grep "$INVA_MSG");
 	if [[ $PRINT == "TRUE" && $ERROR != "" ]]
 	then # A different sed for with and without the col 'cause regex would ignore the last number for some reason
@@ -135,6 +138,12 @@ do
 			STATE=$INVALID
 		else NEXT=""
 		fi
+	elif [[ $ERR_MISC != "" ]] # Other errors
+	then
+	append=$(echo " $line" | sed "s/$ERR_MISC//" | sed "s/^ : //")
+	printf -v add "\t%s\t%s\n" "${BRIGHT}${ERRORC}Error${NORMAL}" "$append"
+	NEXT+=$add
+	STATE=$ERROR
 	fi
 done <<< "$NORM"
 
