@@ -10,11 +10,11 @@
 #                                                                              #
 # **************************************************************************** #
 
-# A formatting wrapper for Norminette 2.0
+# A formatting wrapper for Norminette v3
 # Inspired by github.com/VictorTennekes on 42 Slack
 # Should be added as alias or placed to the root for easy use
 # Tested to work on zsh 5.3, bash 3.2.57 on iMac 10.14.6
-# Made by phakakos, Hive Helsinki 2020
+# Made by phakakos, Hive Helsinki 2021
 
 
 # expanded aliases to support norminette aliases
@@ -52,10 +52,10 @@ VERBOSE=""
 PRINT=""
 
 # Parts of the norminette output to differenciate the different outputs
-NORME="Norme: "
+NORME="!"
 COMP_MSG="may not compile"
 INVA_MSG="Not a valid file"
-ERR_MSG="Error ("
+ERR_MSG="Error: "
 ERR_MISC="Error"
 
 # in case of "file may not compile" the norminette will not print out norm errors.
@@ -79,22 +79,22 @@ while IFS= read -r line
 do 
 	# check norminette output
 	# Reformat file name line to only print out the 'path/file'
-	NORM_FILE=$(echo "$line" | grep "$NORME" | sed "s/$NORME//" | sed 's/.\/ //');
+	NORM_FILE=$(echo "$line" | grep "$NORME" | sed "s/$NORME//" | sed 's/:.*$//');
 	WARNING=$(echo "$line"  | grep "$COMP_MSG");
 	ERROR=$(echo "$line" | grep "$ERR_MSG");
 	ERROR_MISC=$(echo "$line" | grep "$ERR_MISC");
 	INVA=$(echo "$line" | grep "$INVA_MSG");
+	#printf "ERROR IS %s" "$ERROR"
 	if [[ $PRINT == "TRUE" && $ERROR != "" ]]
 	then # A different sed for with and without the col 'cause regex would ignore the last number for some reason
-		LINES=$(echo "$ERROR" | sed -e 's/^Error (line \([0-9]\{1,\}\)): .*$/\1/');
+		LINES=$(echo "$ERROR" | sed -e 's/^Error:[A-Z_ ]*(line:[ ]*\([0-9]\{1,\}\)):\t.*$/\1/');
 			if [[ $LINES == $ERROR ]]
 			then 
-			LINES=$(echo "$ERROR" | sed -e 's/^Error (line \([0-9]\{1,\}\)[, col [0-9]\{1,\}]\{0,\}): .*$/\1/');
-			COL=$(echo "$ERROR" | sed -e 's/^Error (line [0-9]\{1,\}, col \([0-9]\{1,\}\)): .*$/\1/');
+			LINES=$(echo "$ERROR" | sed -e 's/^Error:[A-Z_ ]\{1,\}(line:[ ]\{1,\}\([0-9]\{1,\}\)[, col:[ ]\{1,\}[0-9]\{1,\}]\{0,\}):.*$/\1/');
+			COL=$(echo "$ERROR" | sed -e 's/^Error:[A-Z_ ]\{1,\}(line:[ ]\{1,\}[0-9]\{1,\}, col:[ ]\{1,\}\([0-9]\{1,\}\)):.*$/\1/');
 			else COL=""
 			fi
 	fi
-
 	if [[ $NORM_FILE != "" ]] # Line is the name
 	then FILE_NAME=$NORM_FILE; CCOL=""; CLINE=""; NEXT+=$FILE_LINE; FILE_LINE=""
 	printf "%s" "$NEXT"; NEXT="" # print out the current file and wipe it for the next one
@@ -111,6 +111,7 @@ do
 			if [[ $COL != "" && ( $COL != $CCOL || $LINES != $CLINE) ]]
 			then NEXT+=$FILE_LINE; FILE_LINE=""; CCOL=$COL; CLINE=$LINES
 			append=$(awk "FNR==$CLINE" $FILE_NAME)
+			append=$(echo "$append" | sed "s/^	/    /")
 			printf -v add "\t\t%s\n" " |${ERRORPC}${append:0:$CCOL}${REVERSE}${append:$CCOL}${NORMAL}"
 			FILE_LINE+=$add
 			elif [[ $LINES != "" && $LINES != $ERROR && $LINES != $CLINE ]]
@@ -120,7 +121,7 @@ do
 			FILE_LINE+=$add
 			fi
 		fi
-	append=$(echo " $line" | sed "s/$ERR_MSG//" | sed -e 's/\(line [0-9]\{1,\}\)): /\1'$'\t\t''/' | sed $'s/, /\t/' | sed $'s/): /\t/')
+	append=$(echo " $line" | sed "s/$ERR_MSG//" | sed -e 's/(line:[ ]\{1,\}\([0-9]\{1,\}\)): /line: \1'$'\t\t''/' | sed $'s/, /\t/' | sed $'s/): /\t/')
 	printf -v add "\t%s\t%s\n" "${BRIGHT}${ERRORC}Error${NORMAL}" "$append"
 	NEXT+=$add
 	STATE=$ERROR
@@ -164,7 +165,7 @@ START=1
 if [[ $1 == "-v" ]]
 then START=2; VERBOSE="TRUE"
 elif [[ $1 == "-p" ]]
-then START=2; PRINT="TRUE"
+then START=2; PRINT="TRUE";
 fi
 
 if [[ $1 == "-vp" || $1 == "-pv" ]]
